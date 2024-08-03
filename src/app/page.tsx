@@ -1,17 +1,27 @@
 import Link from "next/link";
 
-import { LatestPost } from "@/app/_components/post";
 import { api, HydrateClient } from "@/trpc/server";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/app/_components/ui/card";
+import { Button } from "@/app/_components/ui/button";
+import { StartGame } from "./_components/start-game";
+import { HandleSession } from "./_components/handle-session";
 
 export default async function Home() {
-  const hello = await api.post.hello({ text: "from tRPC" });
-
-  void api.post.getLatest.prefetch();
+  // const hello = await api.post.hello({ text: "from tRPC" });
 
   return (
     <HydrateClient>
+      <HandleSession />
+
       <main className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-b from-[#2e026d] to-[#15162c] text-white">
-        <div className="container flex flex-col items-center justify-center gap-12 px-4 py-16">
+        {/* <div className="container flex flex-col items-center justify-center gap-12 px-4 py-16">
           <h1 className="text-5xl font-extrabold tracking-tight sm:text-[5rem]">
             Create <span className="text-[hsl(280,100%,70%)]">T3</span> App
           </h1>
@@ -46,7 +56,26 @@ export default async function Home() {
           </div>
 
           <LatestPost />
-        </div>
+        </div> */}
+
+        <Card className="w-[380px]">
+          <CardHeader>
+            <CardTitle>Trivia Game</CardTitle>
+            <CardDescription>
+              Challenge your knowledge against the world
+            </CardDescription>
+          </CardHeader>
+
+          <CardContent className="flex flex-col space-y-4">
+            <StartGame />
+
+            <Button asChild>
+              <Link href="/leaderboard">Leaderboard</Link>
+            </Button>
+          </CardContent>
+
+          <CardFooter>{/* <p>Card Footer</p> */}</CardFooter>
+        </Card>
       </main>
     </HydrateClient>
   );

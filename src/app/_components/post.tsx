@@ -43,7 +43,7 @@ export function LatestPost() {
           disabled={createPost.isPending}
         >
           {createPost.isPending ? "Submitting..." : "Submit"}
-        </button>
+        </button>return { gameId: game[0]!.gameSlug };
       </form>
     </div>
   );
