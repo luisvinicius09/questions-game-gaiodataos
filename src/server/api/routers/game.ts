@@ -15,22 +15,6 @@ type FetchTriviaQuestionResponse = {
 };
 
 export const gameRouter = createTRPCRouter({
-  // hello: publicProcedure
-  //   .input(z.object({ text: z.string() }))
-  //   .query(({ input }) => {
-  //     return {
-  //       greeting: `Hello ${input.text}`,
-  //     };
-  //   }),
-
-  // create: publicProcedure
-  //   .input(z.object({ name: z.string().min(1) }))
-  //   .mutation(async ({ ctx, input }) => {
-  //     await ctx.db.insert(posts).values({
-  //       name: input.name,
-  //     });
-  //   }),
-
   // getLatest: publicProcedure.query(async ({ ctx }) => {
   //   const post = await ctx.db.query.posts.findFirst({
   //     orderBy: (posts, { desc }) => [desc(posts.createdAt)],
@@ -39,11 +23,29 @@ export const gameRouter = createTRPCRouter({
   //   return post ?? null;
   // }),
 
+  fetchGameStats: publicProcedure
+    .input(z.object({ gameId: z.number() }))
+    .query(async ({ ctx, input }) => {
+      const game = await ctx.db.query.games.findFirst({
+        where: (games, { eq }) => eq(games.id, input.gameId),
+      });
+
+      if (!game)
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Game not found",
+        });
+
+      const questions = await ctx.db.query.gameQuestions.findMany({
+        where: eq(gameQuestions.gameId, input.gameId),
+      });
+
+      return { game, questions };
+    }),
+
   prepareGame: publicProcedure
     .input(z.object({ theme: z.string(), difficulty: z.string() }))
     .mutation(async ({ ctx, input }) => {
-      console.log("input values", input);
-
       const headers = ctx.headers;
       const userSlug = headers.get("cookie")?.split("=")[1];
 
@@ -116,5 +118,35 @@ export const gameRouter = createTRPCRouter({
         code: "INTERNAL_SERVER_ERROR",
         message: "Something went wrong starting the game",
       });
+    }),
+
+  finishGame: publicProcedure
+    .input(z.object({ gameId: z.number() }))
+    .mutation(async ({ ctx, input }) => {
+      const game = await ctx.db.query.games.findFirst({
+        where: (games, { eq }) => eq(games.id, input.gameId),
+      });
+
+      if (!game)
+        throw new TRPCError({ code: "NOT_FOUND", message: "Game not found" });
+
+      const questions = await ctx.db.query.gameQuestions.findMany({
+        where: eq(gameQuestions.gameId, input.gameId),
+      });
+
+      let score = 0;
+
+      for (const question of questions) {
+        if (question.userAnswerCorrectly) {
+          score++;
+        }
+      }
+
+      await ctx.db
+        .update(games)
+        .set({ score: score })
+        .where(eq(games.id, input.gameId));
+
+      return true;
     }),
 });

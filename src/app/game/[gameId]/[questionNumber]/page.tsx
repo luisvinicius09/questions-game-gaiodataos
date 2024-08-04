@@ -11,9 +11,16 @@ import {
   FormControl,
   FormField,
   FormItem,
-  FormLabel,
 } from "@/app/_components/ui/form";
-import { RadioGroup, RadioGroupItem } from "@/app/_components/ui/radio-group";
+import { RadioGroup } from "@/app/_components/ui/radio-group";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/app/_components/ui/card";
+import { QuestionAnswers } from "@/app/_components/question-answers";
 
 const formSchema = z.object({
   answer: z.string(),
@@ -30,17 +37,33 @@ export default function GameQuestion({
     resolver: zodResolver(formSchema),
   });
 
+  const finishGameMutation = api.game.finishGame.useMutation({
+    onSuccess: async () => {
+      router.push(`/game/${params.gameId}/stats`);
+    },
+    onError: async () => {
+      return;
+    },
+  });
+
   const submitQuestionAnswerMutation =
     api.question.submitQuestionAnswer.useMutation({
       onSuccess: async (data) => {
-        if (!data) {
-          router.push(`/game/${params.gameId}/stats`);
+        if (data.action === "GAME_FINISHED") {
+          await finishGameMutation.mutateAsync({
+            gameId: Number(params.gameId),
+          });
           return;
         }
 
-        router.push(`/game/${params.gameId}/${data.questionNumber}`);
+        if (data.action === "NEXT_QUESTION") {
+          router.push(
+            `/game/${params.gameId}/${data.question?.questionNumber}`,
+          );
+        }
       },
       onError: async () => {
+        //TODO: Handle this error
         return;
       },
     });
@@ -59,7 +82,7 @@ export default function GameQuestion({
   });
 
   if (!question) {
-    // router.push("/");
+    // TODO: router.push("/");
     return <></>;
   }
 
@@ -70,55 +93,41 @@ export default function GameQuestion({
 
   return (
     <div>
-      <h1>Question: {question.question}</h1>
+      <Card>
+        <CardHeader>
+          <CardTitle>Question:</CardTitle>
+          <CardDescription className="text-xl">
+            {question.question}
+          </CardDescription>
+        </CardHeader>
 
-      <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-          <FormField
-            control={form.control}
-            name="answer"
-            render={({ field }) => (
-              <FormItem>
-                <FormControl>
-                  <RadioGroup
-                    onValueChange={field.onChange}
-                    defaultValue={field.value}
-                    className="flex flex-col space-y-1"
-                  >
-                    {answers.map((answer, idx) => {
-                      return (
-                        <FormItem
-                          className="flex items-center space-x-3 space-y-0"
-                          key={idx}
-                        >
-                          <FormControl>
-                            <RadioGroupItem
-                              value={answer}
-                              className="peer sr-only"
-                            />
-                          </FormControl>
-
-                          <FormLabel
-                            className={
-                              (field.value === answer
-                                ? "bg-black text-white"
-                                : "bg-background hover:text-accent-foreground hover:opacity-80 ") +
-                              " inline-flex h-9 cursor-pointer items-center justify-center rounded-md border border-input px-4 py-2 text-sm font-medium shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 peer-checked:bg-primary peer-checked:text-primary-foreground"
-                            }
-                          >
-                            {answer}
-                          </FormLabel>
-                        </FormItem>
-                      );
-                    })}
-                  </RadioGroup>
-                </FormControl>
-              </FormItem>
-            )}
-          />
-          <Button type="submit">Submit</Button>
-        </form>
-      </Form>
+        <CardContent>
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+              <FormField
+                control={form.control}
+                name="answer"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormControl>
+                      <RadioGroup
+                        onValueChange={field.onChange}
+                        defaultValue={field.value}
+                        className="grid grid-cols-2 grid-rows-2"
+                      >
+                        <QuestionAnswers field={field} answers={answers} />
+                      </RadioGroup>
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
+              <Button type="submit" className="w-full">
+                Submit
+              </Button>
+            </form>
+          </Form>
+        </CardContent>
+      </Card>
     </div>
   );
 }

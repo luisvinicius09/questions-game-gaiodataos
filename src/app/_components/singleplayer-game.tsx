@@ -36,7 +36,7 @@ const formSchema = z.object({
   difficulty: z.string(),
 });
 
-export function StartGame() {
+export function SingleplayerGame() {
   const router = useRouter();
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -65,6 +65,8 @@ export function StartGame() {
   async function onSubmit(values: z.infer<typeof formSchema>) {
     await prepareGameQuery.mutateAsync(values);
   }
+
+  // TODO: https://stackoverflow.com/questions/77217749/how-to-add-animation-to-collapsible-element-shadcn
 
   return (
     <Collapsible className="flex flex-col">

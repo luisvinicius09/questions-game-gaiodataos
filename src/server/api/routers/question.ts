@@ -1,8 +1,8 @@
 import { z } from "zod";
 import { createTRPCRouter, publicProcedure } from "../trpc";
 import { TRPCError } from "@trpc/server";
-import { gameQuestions } from "@/server/db/schema";
-import { and, eq } from 'drizzle-orm';
+import { gameQuestions, games } from "@/server/db/schema";
+import { and, eq } from "drizzle-orm";
 
 export const questionRouter = createTRPCRouter({
   fetchQuestion: publicProcedure
@@ -16,12 +16,11 @@ export const questionRouter = createTRPCRouter({
           ),
       });
 
-      if (!question) {
+      if (!question)
         throw new TRPCError({
           code: "NOT_FOUND",
           message: "Question requested not found",
         });
-      }
 
       return question;
     }),
@@ -34,6 +33,20 @@ export const questionRouter = createTRPCRouter({
       }),
     )
     .mutation(async ({ ctx, input }) => {
+      const game = await ctx.db.query.games.findFirst({
+        where: (games, { eq }) => eq(games.id, input.gameId),
+      });
+
+      if (!game)
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Game not found",
+        });
+
+      if (game.status === "done") {
+        return { action: "GAME_FINISHED" };
+      }
+
       const question = await ctx.db.query.gameQuestions.findFirst({
         where: (gameQuestions, { eq, and }) =>
           and(
@@ -53,6 +66,7 @@ export const questionRouter = createTRPCRouter({
         .update(gameQuestions)
         .set({
           userAnswerCorrectly: question.correctAnswer === input.answer,
+          userAnswer: input.answer,
         })
         .where(
           and(
@@ -70,9 +84,16 @@ export const questionRouter = createTRPCRouter({
       });
 
       if (!nextQuestion) {
-        return false;
+        await ctx.db
+          .update(games)
+          .set({
+            status: "done",
+          })
+          .where(eq(games.id, input.gameId));
+
+        return { action: "GAME_FINISHED" };
       }
 
-      return nextQuestion;
+      return { action: "NEXT_QUESTION", question: nextQuestion };
     }),
 });
