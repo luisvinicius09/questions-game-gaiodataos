@@ -15,14 +15,6 @@ type FetchTriviaQuestionResponse = {
 };
 
 export const gameRouter = createTRPCRouter({
-  // getLatest: publicProcedure.query(async ({ ctx }) => {
-  //   const post = await ctx.db.query.posts.findFirst({
-  //     orderBy: (posts, { desc }) => [desc(posts.createdAt)],
-  //   });
-
-  //   return post ?? null;
-  // }),
-
   fetchGameStats: publicProcedure
     .input(z.object({ gameId: z.number() }))
     .query(async ({ ctx, input }) => {

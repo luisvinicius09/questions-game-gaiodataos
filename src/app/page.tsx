@@ -35,6 +35,10 @@ export default async function Home() {
             <Button asChild>
               <Link href="/leaderboard">Leaderboard</Link>
             </Button>
+
+            <Button asChild>
+              <Link href="/stats">Your Stats</Link>
+            </Button>
           </CardContent>
 
           <CardFooter>{/* <p>Card Footer</p> */}</CardFooter>
