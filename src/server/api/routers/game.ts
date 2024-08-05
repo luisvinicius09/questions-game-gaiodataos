@@ -98,7 +98,7 @@ export const gameRouter = createTRPCRouter({
             gameId: game.id,
             questionNumber: index,
             correctAnswer: question.correct_answer,
-            incorrectAnswers: question.incorrect_answers.join(","),
+            incorrectAnswers: question.incorrect_answers.join("*"),
             question: question.question,
           });
         }

@@ -89,7 +89,7 @@ export default function GameQuestion({
 
   const answers = [
     question.correctAnswer,
-    ...question.incorrectAnswers.split(","),
+    ...question.incorrectAnswers.split("*"),
   ];
 
   return (
