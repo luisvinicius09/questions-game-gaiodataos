@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import { motion } from "framer-motion";
 import {
   Form,
   FormControl,
@@ -92,7 +93,7 @@ export default function GameQuestion({
   ];
 
   return (
-    <div>
+    <motion.div>
       <Card>
         <CardHeader>
           <CardTitle>Question:</CardTitle>
@@ -128,6 +129,6 @@ export default function GameQuestion({
           </Form>
         </CardContent>
       </Card>
-    </div>
+    </motion.div>
   );
 }
