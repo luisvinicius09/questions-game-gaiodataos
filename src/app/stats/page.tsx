@@ -20,7 +20,9 @@ export default async function Stats() {
       <Card>
         <CardHeader>
           <CardTitle>Your Stats</CardTitle>
-          <CardDescription>Your Id: {stats.user?.slug}</CardDescription>
+          <CardDescription>
+            Your Id: {stats.user?.slug.split("").splice(0, 20).join("") + "..."}
+          </CardDescription>
         </CardHeader>
 
         <CardContent className="space-y-2">
