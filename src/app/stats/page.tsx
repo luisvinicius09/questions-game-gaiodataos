@@ -10,6 +10,7 @@ import {
 import { Button } from "../_components/ui/button";
 import Link from "next/link";
 import { HandleUserNameChange } from "../_components/handle-user-name-change";
+import { PlayerStatsChart } from "../_components/player-stats-chart";
 
 export default async function Stats() {
   const stats = await api.player.fetchPlayerStats();
@@ -22,9 +23,14 @@ export default async function Stats() {
           <CardDescription>Your Id: {stats.user?.slug}</CardDescription>
         </CardHeader>
 
-        <CardContent>
+        <CardContent className="space-y-2">
           <HandleUserNameChange userName={stats.user?.name} />
-          <p>display some stats</p>
+
+          <PlayerStatsChart
+            playerAverage={Number(stats.playerAverageScore)}
+            usersAverage={Number(stats.usersAverageScore)}
+            usersCount={stats.userCount}
+          />
         </CardContent>
 
         <CardFooter>

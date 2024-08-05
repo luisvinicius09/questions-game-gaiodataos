@@ -1,7 +1,7 @@
 import { TRPCError } from "@trpc/server";
 import { createTRPCRouter, publicProcedure } from "../trpc";
-import { eq } from "drizzle-orm";
-import { users } from "@/server/db/schema";
+import { avg, count, eq, ne } from "drizzle-orm";
+import { games, users } from "@/server/db/schema";
 import { z } from "zod";
 
 export const playerRouter = createTRPCRouter({
@@ -65,6 +65,21 @@ export const playerRouter = createTRPCRouter({
       user = newUser;
     }
 
-    return { user };
+    const [playerAverageScore] = await ctx.db
+      .select({ value: avg(games.score) })
+      .from(games)
+      .where(eq(games.userId, user!.id));
+
+    const [usersAverageScore, userCount] = await ctx.db
+      .select({ value: avg(games.score), userCount: count(users.id) })
+      .from(games)
+      .where(ne(games.userId, user!.id));
+
+    return {
+      user,
+      playerAverageScore: Number(playerAverageScore?.value).toFixed(2) ?? 0,
+      usersAverageScore: Number(usersAverageScore?.value).toFixed(2) ?? 0,
+      userCount: (userCount?.userCount ?? 0) + 1,
+    };
   }),
 });

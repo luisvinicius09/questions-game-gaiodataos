@@ -25,7 +25,7 @@ export default async function Leaderboard() {
       </CardHeader>
 
       <CardContent>
-        <ScrollArea className="h-[300px] rounded-md border p-4">
+        <ScrollArea className="h-[300px] rounded-md border p-4 overflow-auto">
           {leaderboardGames.length === 0 ? (
             <div className="flex h-full items-center justify-center text-center">
               <p>No games found</p>
